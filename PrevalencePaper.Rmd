@@ -3,8 +3,8 @@ title: "Factors of Alcoholism Prevalance Rates"
 author: "Krista Shuckerow"
 date: "April 8, 2018"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -219,7 +219,16 @@ After removing some influential points the percent variation in responses explai
 
 ## By Region 
 
-There may be a relation between countries that are close together. But this analysis requires typing in a lot of data from the world health organization that I really don't want to do unless I have to so I'm going to wait and see what Kibria says.
+To dp: analysis based on region.
+```{r echo = F}
+r <- c('Eastern Mediterranean', 'Europe', 'Africa', 'Americas' , 'Western Pacific', 'South-East Asia' )
+
+#Start at the letter M
+regions <- c(r[1], r[2], r[3], r[2], r[3], r[4], r[4], r[2], r[5], r[2], r[2], r[4], r[1], r[6], r[4], r[2], r[2], r[4], r[3], r[6], r[4], r[2], r[3], r[4], r[5], r[2], r[3], r[3], r[3], r[3], r[5], r[3], r[4], r[3], r[3], r[4], r[5], r[4], r[3], r[3], r[5], r[4], r[2], r[4], r[2], r[2], r[6], r[3], r[2], r[1], r[4], r[4], r[4], r[1], r[4], r[3], r[3], r[2], r[3], r[5], r[2], r[2], r[3], r[3], r[2], r[2], r[3], r[2], r[4], r[4], r[3], r[3], r[4], r[4], r[4], r[2], r[2], r[6], r[6], r[1], r[1], r[2], r[2], r[2], r[4], r[5], r[1], r[2], r[3], r[5], r[1], r[2], r[5], r[2], r[1], r[3], r[3], r[1], r[2], r[2], r[3], r[3], r[5], r[6], r[3], r[2], r[5], r[3], r[3], r[4], r[5], r[2], r[5], r[2], r[1], r[3], r[6], r[3], r[5], r[6], r[2], r[5], r[4], r[3], r[3], r[5], r[2], r[1], r[1], r[5], r[4], r[5], r[4], r[4], r[5], r[2], r[2], r[1], r[5], r[2], r[2], r[2], r[3], r[4], r[4], r[4], r[5], r[2], r[3], r[1], r[3], r[2], r[3], r[3], r[5], r[2], r[2], r[5], r[1], r[3], r[2], r[6], r[1], r[4], r[3], r[2], r[2], r[1], r[2], r[6], r[2], r[6], r[3], r[5], r[4], r[1], r[2], r[2], r[5], r[3], r[2], r[1], r[2], r[3], r[4], r[4], r[2], r[5], r[4], r[5], r[1], r[3], r[3])
+
+classified <- cbind.data.frame(alcoholism, regions)
+print(classified[,c(-1, -2)])
+```
 
 
 # Conclusion
