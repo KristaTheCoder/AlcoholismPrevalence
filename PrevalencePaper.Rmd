@@ -3,8 +3,8 @@ title: "Factors of Alcoholism Prevalance Rates"
 author: "Krista Shuckerow"
 date: "April 8, 2018"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -28,7 +28,7 @@ We will begin our analysis by determining if there is a significant difference i
 
 ### Raw Data
 
-```{r}
+```{r echo = FALSE}
 alcoholism <- read.csv("data.csv", header = F, row.names = 1)
 colnames(alcoholism) <- as.character(unlist(alcoholism[2,]))
 alcoholism <- alcoholism[c(-1,-2),]
@@ -45,9 +45,10 @@ head(alcoholism)
 Looking at the first few data points we see that the data is paired by country. Let's look at the distribution of the data. 
 
 
-```{r echo=FALSE}
+```{r echo=TRUE}
 summary(alcoholism)
-
+```
+```{r echo = FALSE}
 boxplot.default(alcoholism[c(-1, -2)], main = "Distribution of Proportion Suffering From Alcoholism", horizontal = T)
 
 ```
@@ -61,9 +62,10 @@ We want to test the difference between the prevalence rate amoung men and women.
 $$H_0: p_m - p_f \leq  0$$
 $$H_a: p_m - p_f > 0 $$ 
 
-```{r echo=FALSE}
+```{r echo= TRUE}
 difference <- alcoholism$Male - alcoholism$Female
 summary(difference)
+
 boxplot(difference, horizontal = TRUE, main = "Distribution in Difference of Alcoholism Prevalence")
 ```
 
