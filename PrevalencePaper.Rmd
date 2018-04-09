@@ -1,0 +1,88 @@
+---
+title: "Factors of Alcoholism Prevalance Rates"
+author: "Krista Shuckerow"
+date: "April 8, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+We want to studey factors that affect alcoholism prevalence across the world. The World Health Organization has a variety of factors such as gender, break down of alcohol sales, the proportion of men and women who abstain from alcohol per country and region, which we can use in our analysis. The response variable is the prevalence of alcoholism in a country. We will collect data from the Global Health Observatory data repository which is maintained by the World Health Organization. 
+
+A person is classified as suffering from alcoholism if they have a disorder attributable to the consumption of alcohol. Prevalence is defined as the percent of adults (15+ years of age) with a diagnosis of alcoholism during a given calendar year. All data comes from the year 2010.
+
+
+# Analysis 
+
+In this paper we will perform tests at a 95% confidence level unless otherwise stated. 
+
+## Gender Differences
+
+We will begin our analysis by determining if there is a significant difference in the proportion of men and women who suffer from alcoholism prevalence across the world. 
+
+### Raw Data
+
+```{r}
+alcoholism <- read.csv("data.csv", header = F, row.names = 1)
+colnames(alcoholism) <- as.character(unlist(alcoholism[2,]))
+alcoholism <- alcoholism[c(-1,-2),]
+alcoholism$Male <- gsub("\\[.{1,}", "", alcoholism$Male)
+alcoholism$Female <- gsub("\\[.{1,}", "", alcoholism$Female)
+alcoholism$`Both sexes` <- gsub("\\[.{1,}", "",alcoholism$`Both sexes`)
+alcoholism$Male <- as.numeric(alcoholism$Male)
+alcoholism$Female <- as.numeric(alcoholism$Female)
+alcoholism$`Both sexes` <- as.numeric(alcoholism$`Both sexes`)
+
+head(alcoholism)
+```
+
+Looking at the first few data points we see that the data is paired by country. Let's look at the distribution of the data. 
+
+
+```{r echo=FALSE}
+summary(alcoholism)
+
+boxplot.default(alcoholism[c(-1, -2)], main = "Distribution of Proportion Suffering From Alcoholism", horizontal = T)
+
+```
+
+Each individual distribution appears skewed to the right. Both Male and Female distributions have various outliers. Looking at the summary of the data both the median and mean of the male distribution are higher than that of then women. 
+
+### Testing difference
+
+We want to test the difference between the prevalence rate amoung men and women. We will use a paired t-test Our null hypothesis is there is no difference in the prevalence rates. Our alternative hypothesis is that male prevalence rates are higher than female prevalence rates. We will test at the 95% significance level. 
+
+$$H_0: p_m - p_f \leq  0$$
+$$H_a: p_m - p_f > 0 $$ 
+
+```{r echo=FALSE}
+difference <- alcoholism$Male - alcoholism$Female
+summary(difference)
+boxplot(difference, horizontal = TRUE, main = "Distribution in Difference of Alcoholism Prevalence")
+```
+
+Based on the summary statistics and the boxplot of the distribution of differences in alcoholism prevalence between males and females across the world does not appear normally distributed. Normality is an assumption of a paired t-test. We will preform a Shapiro-Wilk test of normality to be certain. 
+
+```{r echo = FALSE}
+shapiro.test(difference)
+```
+
+Looking at the result of the Shapiro-Wilk normality test we get a p-value of approximately zero, which is less than 0.05. Therefore, we will reject the null hypothesis of normality. We conclude the difference in alcohol prevalence is not normally distributed. Since the normality assumption is violatedwe instead use the non-parametric alternative to the paired t-test, the Wilcoxon signed-rank test, even thought sample size is large (n = 190).
+
+We will test the null hypothesis that the mean rank difference in alcoholism prevalence between men and women is the same against the alternative hypothesis that the mean rank difference in alcoholism prevalence is greater in men. 
+
+```{r echo=FALSE}
+wilcox.test(difference, alternative = "greater", conf.int = T)
+```
+
+Based on the results of the Wilcoxon signed rank test we get a p-value of approximately zero. This is less that 0.05 therefore we concluded than males have a higher alcoholism prevalence rates. In addition we are 95% confident that the true difference is male and female alcoholism prevalance is 4.75 percentage points.
+
+## Proportion of Alcohol Sales
+
+We will now investigate the impact of what types of alcohol are 
