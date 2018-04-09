@@ -3,8 +3,8 @@ title: "Factors of Alcoholism Prevalance Rates"
 author: "Krista Shuckerow"
 date: "April 8, 2018"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-We want to studey factors that affect alcoholism prevalence across the world. The World Health Organization has a variety of factors such as gender, break down of alcohol sales, the proportion of men and women who abstain from alcohol per country and region, which we can use in our analysis. The response variable is the prevalence of alcoholism in a country. We will collect data from the Global Health Observatory data repository which is maintained by the World Health Organization. 
+We want to studey factors that affect alcoholism prevalence across the world. The World Health Organization has a variety of factors such as gender, region, break down of alcohol sales, the proportion of men and women who abstain from alcohol per country and region, which we can use in our analysis. The response variable is the prevalence of alcoholism in a country. We will collect data from the Global Health Observatory data repository which is maintained by the World Health Organization. 
 
 A person is classified as suffering from alcoholism if they have a disorder attributable to the consumption of alcohol. Prevalence is defined as the percent of adults (15+ years of age) with a diagnosis of alcoholism during a given calendar year. All data comes from the year 2010.
 
@@ -85,9 +85,31 @@ wilcox.test(difference, alternative = "greater", conf.int = T)
 
 Based on the results of the Wilcoxon signed rank test we get a p-value of approximately zero. This is less that 0.05 therefore we concluded than males have a higher alcoholism prevalence rates. In addition we are 95% confident that the true difference is male and female alcoholism prevalance is 4.75 percentage points.
 
+### Men & Women Correlation 
+
+Even though men have higher alcoholism prevalence rate, there may be a relation between the prevalence rates of men and women in the same country. 
+
+```{r echo = T}
+plot(alcoholism$Male, alcoholism$Female, xlab = "male", ylab = "female", main = "Alcoholism Prevalence Rates")
+```
+Looking at the graph there appears to be a linear relation. So we'll try to fit a linear model. 
+
+```{r echo = T}
+men.women.lm <- lm(alcoholism$Male ~ alcoholism$Female)
+summary(men.women.lm)
+plot(men.women.lm)
+
+```
+
+Our Model for prevalence: 
+$$male = 1.9389 + 3.0057*female$$
+Looking at the output we find the model is significant. And that there is an R-Squared value of 0.7209, meaning that 72.09% of variation in men drinking can be explained by this model and that there is a 0.8491 correlation between the prevalence of alcoholism between men and women. 
+
+Looking at the Normal Q-Q plot the data appears to be normally distributed, there is potentially slight skewedness, but that should be ok because the sample size is large.  The residuals vs. fitted graph shows the points are scattered evenly 0. There do appear to be some outliers. Like points 76, 156 and 16. It appears the assumption of normality is met, and that the model is adequate. 
+
 ## Proportion of Alcohol Sales
 
-We will now investigate how much a certain type of alcohol sold impacts alcoholism levels. We will create a regressive model where male and female are factors. We'll start with the effect of just spirits, or hard alcohol, to investigate if there is a relation between the proportion of alcohol sales in a country attributed to spirits and the prevalence of alcoholism. 
+We will now investigate how much a certain type of alcohol sold impacts alcoholism levels. We will create a regressive model where male and female are factors. We'll start with the effect of wine, to investigate if there is a relation between the proportion of alcohol sales in a country attributed to wine and the prevalence of alcoholism. 
 
 ### Raw Data 
 
@@ -109,35 +131,99 @@ countries <- countries$V1
 countries <- countries[c(-1,-2)]
 
 countries2 <- c(countries, countries)
-proportion <- c(alcohol$Spirits, alcohol$Spirits)
+spirits<- c(alcohol$Spirits, alcohol$Spirits)
+wine <- c(alcohol$Wine, alcohol$Wine)
+beer <- c(alcohol$Beer, alcohol$Beer)
 responses <- c(alcoholism$Male, alcoholism$Female)
 factors <- c(rep("M", length(alcoholism$Male)), rep("F", length(alcoholism$Female)))
 
-gender <- data.frame(countries2, responses, proportion, factors)
-colnames(gender) <- c("country", "response", "Spirits", "factor")
+gender <- data.frame(countries2, responses, wine,  factors)
+colnames(gender) <- c("country", "response", "wine", "factor")
 gender <- gender[,-1]
 
 head(gender)
 ```
 
-The above is the first few rows of a data table containing the alcoholism prevalence levels of a specific country for a gender and the proportion of the countries alcohol sale that are spirits. 
+The above is the first few rows of a data table containing the alcoholism prevalence levels of a specific country for a gender and the proportion of the countries alcohol sale that is wine. 
 
+### Data Analysis
+
+#### Plots
 First, let's look at a scatterplot of the data. 
 
 ```{r echo = FALSE}
 library(car)
-scatterplot(gender$response ~ gender$Spirits + gender$factor,
-            xlab = "Proportion of Alcohol Sold is Spirits", 
+scatterplot(gender$response ~ gender$wine + gender$factor,
+            xlab = "Proportion of Alcohol Sold is Wine", 
             ylab = "Prevalence of Alcoholism", 
-            legend = list(title = "Gender"),
-            main = "Relation between alcoholism prevalence and spirits by country")
+            main = "Alcoholism Prevalence and Wine Sales",
+            legend = list(title = "Gender"))
 
 ```
-
+#### Linear Regression Model 
 We will fit a linear regression model. 
 
 ```{r echo = TRUE}
-spirits.lm <- second <- lm(response ~ proportion + factor, data = gender)
+wine.lm <- second <- lm(response ~ wine + factor, data = gender)
 
-summary(spirits.lm)
+summary(wine.lm)
+
 ```
+Based on the output we also conclude that this model does have predictive power over the level of alcoholism prevalence based spirits and gender. The p-value is approximately 0 which is less tha 0.05. The R-squared value is 0.3806 meaning that 38.06% of the varation in alcoholism prevalence can be explained by this model.  
+
+Looking at the result of the regression model wine and gender are both significant variables in the model. The intercept is also significant. All with p-values less tha 0.05. 
+
+Our fitted model:
+
+$$prevalance = 1.41721 + 0.02853*wine + 5.68066*male$$
+
+#### Plots
+
+We still have to check the conditions of the model to see if it's adequate. 
+
+```{r echo = TRUE}
+plot(wine.lm)
+```
+
+Looking at the Normal Q-Q plot most of the data falls along the dotted line but the end of the ditribution curve at the ends, implying the data is skewed. Looking at the residuals vs. fitted graph a lot of this variation seems to be comming from the larger values, or the men. Otherwise the points look scattered normally and evenly about the line.
+
+#### Residuals
+
+```{r echo = T}
+wine.lm$residuals
+sum(wine.lm$residuals > 3)
+sum(wine.lm$residuals < -3)
+```
+
+Looking at the residuals of the linear model there over 75 potential influential points that are more extreme than the absolute value of 3. 
+
+Let's try to remove some of the more influential points. 
+
+```{r echo = T}
+sort(wine.lm$residuals)
+````
+
+We will remove the top few influential points and re-fit the model. All of these points have "male" as a factor. 
+
+```{r echo = T}
+gender.removed <- gender[c(-76, -142, -16, -157, -58, -156, -127),]
+
+influential.wine.lm <- lm(response ~ wine + factor, data = gender.removed)
+
+summary(influential.wine.lm)
+plot(influential.wine.lm)
+
+````
+
+After removing some influential points the percent variation in responses explained by the model increased to 46.62%. However the Normal Q-Q plot and residual vs. fitted values still show there is a lack or normality in the model. Since the normality assumption in the model is not met the model is inadequate. 
+
+## By Region 
+
+There may be a relation between countries that are close together. But this analysis requires typing in a lot of data from the world health organization that I really don't want to do unless I have to so I'm going to wait and see what Kibria says.
+
+
+# Conclusion
+
+We find that gender is the biggest factor in prevalence rates, and that men are more likely to suffer from alcoholism around the world than women. We also find that there is a positive relationship between the prevalence rate of men and women within a country, and the high prevalence rates of alcoholism in women then it's likely men will also experience a high prevalence rate of alcoholism. 
+
+After we seperated gender out as a factor we analyzed the affect wine had on the model. Even thought our model identified wine as a useful regressor, the regression model it's self was inadequate because it violated the normality assumption deeming all the results useless. 
