@@ -87,4 +87,57 @@ Based on the results of the Wilcoxon signed rank test we get a p-value of approx
 
 ## Proportion of Alcohol Sales
 
-We will now investigate the impact of what types of alcohol are 
+We will now investigate how much a certain type of alcohol sold impacts alcoholism levels. We will create a regressive model where male and female are factors. We'll start with the effect of just spirits, or hard alcohol, to investigate if there is a relation between the proportion of alcohol sales in a country attributed to spirits and the prevalence of alcoholism. 
+
+### Raw Data 
+
+```{r echo = F}
+alcohol <- read.csv("purealcohol.csv", header = F, row.names = 1)
+colnames(alcohol) <-  as.character(unlist(alcohol[2,]))
+alcohol <- alcohol[c(-1, -2),]
+
+# Formatting
+alcohol$Spirits <- gsub("No data", "", alcohol$Spirits)
+alcohol$Spirits <- as.numeric(alcohol$Spirits)
+alcohol$Wine <- gsub("No data", "", alcohol$Wine)
+alcohol$Wine <- as.numeric(alcohol$Wine)
+alcohol$Beer <- gsub("No data", "", alcohol$Beer)
+alcohol$Beer <- as.numeric(alcohol$Beer)
+
+countries <- read.csv("data.csv",header = FALSE)
+countries <- countries$V1
+countries <- countries[c(-1,-2)]
+
+countries2 <- c(countries, countries)
+proportion <- c(alcohol$Spirits, alcohol$Spirits)
+responses <- c(alcoholism$Male, alcoholism$Female)
+factors <- c(rep("M", length(alcoholism$Male)), rep("F", length(alcoholism$Female)))
+
+gender <- data.frame(countries2, responses, proportion, factors)
+colnames(gender) <- c("country", "response", "Spirits", "factor")
+gender <- gender[,-1]
+
+head(gender)
+```
+
+The above is the first few rows of a data table containing the alcoholism prevalence levels of a specific country for a gender and the proportion of the countries alcohol sale that are spirits. 
+
+First, let's look at a scatterplot of the data. 
+
+```{r echo = FALSE}
+library(car)
+scatterplot(gender$response ~ gender$Spirits + gender$factor,
+            xlab = "Proportion of Alcohol Sold is Spirits", 
+            ylab = "Prevalence of Alcoholism", 
+            legend = list(title = "Gender"),
+            main = "Relation between alcoholism prevalence and spirits by country")
+
+```
+
+We will fit a linear regression model. 
+
+```{r echo = TRUE}
+spirits.lm <- second <- lm(response ~ proportion + factor, data = gender)
+
+summary(spirits.lm)
+```
