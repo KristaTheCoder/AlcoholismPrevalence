@@ -3,8 +3,8 @@ title: "Factors of Alcoholism Prevalance Rates"
 author: "Krista Shuckerow"
 date: "March 24, 2018"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -15,9 +15,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 We want to studey factors that affect alcoholism prevalence across the world. The World Health Organization has a variety of factors such as gender, region, break down of alcohol sales, the proportion of men and women who abstain from alcohol per country and region, which we can use in our analysis. The response variable is the prevalence of alcoholism in a country. We will collect data from the Global Health Observatory data repository which is maintained by the World Health Organization. 
 
-A person is classified as suffering from alcoholism if they have a disorder attributable to the consumption of alcohol. This includes binge drinking, drinking to get drunk, and heavy excessive drinking. Prevalence is defined as the percent of adults (15+ years of age) with a diagnosis of alcoholism during a given calendar year. All data comes from the year 2010.
+A person is classified as suffering from alcoholism if they have a disorder attributable to the consumption of alcohol. This includes binge drinking, drinking to get drunk, and heavy excessive drinking, at least once in the past year. This strict definition of alcoholism is taken because of the health related issues alcohol can cause. Prevalence is defined as the percent of adults (15+ years of age) with a diagnosis of alcoholism during a given calendar year. All data comes from the year 2010.
 
-The income index comes from the Human Development Index released by the United Nations in their human development reports.  The income index is defined as GNI per capita (2005 PPP International \$, using natural logarithm) expressed as an index using a minimum value of \$100 and a maximum value $75,000.
+The income index comes from the Human Development Index released by the United Nations in their human development reports.  The income index is defined as GNI per capita (2005 PPP International \$, using natural logarithm) expressed as an index using a minimum value of \$100 and a maximum value \$75,000.
 
 
 # Analysis 
@@ -106,7 +106,7 @@ Looking at the data we are 95% confident that there is between 80.50% and 88.52%
 
 ### Proportion of Alcohol Sales
 
-We will now investigate how much a certain type of alcohol sold impacts alcoholism levels. We will create a regressive model where male and female are factors. We'll start with the effect of wine, to investigate if there is a relation between the proportion of alcohol sales in a country attributed to wine and the prevalence of alcoholism. 
+We will now investigate how much a certain type of alcohol sold impacts alcoholism levels. We will create a regressive model where male and female are factors. We'll start with the effect of wine, to investigate if there is a relation between the proportion of alcohol sales in a country attributed to wine and spirits (hard liquor) and the prevalence of alcoholism. 
 
 #### Raw Data 
 
@@ -174,88 +174,121 @@ r <- c('Eastern Mediterranean', 'Europe', 'Africa', 'Americas' , 'Western Pacifi
 regions <- c(r[1], r[2], r[3], r[2], r[3], r[4], r[4], r[2], r[5], r[2], r[2], r[4], r[1], r[6], r[4], r[2], r[2], r[4], r[3], r[6], r[4], r[2], r[3], r[4], r[5], r[2], r[3], r[3], r[3], r[3], r[5], r[3], r[4], r[3], r[3], r[4], r[5], r[4], r[3], r[3], r[5], r[4], r[2], r[4], r[2], r[2], r[6], r[3], r[2], r[1], r[4], r[4], r[4], r[1], r[4], r[3], r[3], r[2], r[3], r[5], r[2], r[2], r[3], r[3], r[2], r[2], r[3], r[2], r[4], r[4], r[3], r[3], r[4], r[4], r[4], r[2], r[2], r[6], r[6], r[1], r[1], r[2], r[2], r[2], r[4], r[5], r[1], r[2], r[3], r[5], r[1], r[2], r[5], r[2], r[1], r[3], r[3], r[1], r[2], r[2], r[3], r[3], r[5], r[6], r[3], r[2], r[5], r[3], r[3], r[4], r[5], r[2], r[5], r[2], r[1], r[3], r[6], r[3], r[5], r[6], r[2], r[5], r[4], r[3], r[3], r[5], r[2], r[1], r[1], r[5], r[4], r[5], r[4], r[4], r[5], r[2], r[2], r[1], r[5], r[2], r[2], r[2], r[3], r[4], r[4], r[4], r[5], r[2], r[3], r[1], r[3], r[2], r[3], r[3], r[5], r[2], r[2], r[5], r[1], r[3], r[2], r[6], r[1], r[4], r[3], r[2], r[2], r[1], r[2], r[6], r[2], r[6], r[3], r[5], r[4], r[1], r[2], r[2], r[5], r[3], r[2], r[1], r[2], r[3], r[4], r[4], r[2], r[5], r[4], r[5], r[1], r[3], r[3])
 
 classified <- cbind.data.frame(alcoholism, regions)
-print(classified[,c(-1, -2)])
+classified[,c(-1, -2)]
 
 regions2 <- c(regions, regions)
 data.2 <- cbind(gender, regions2)
+
+par(mar=c(4,10,2,1))
+region.boxplot <- boxplot(data.2$response~data.2$regions2, horizontal = T, las = 1, varwidth = T, xlab = "Alcoholism Prevalence Rates", col = c("blue", "red", "yellow", "green", "magenta", "orange"), main = "Prevalance Rates by Region", plot = TRUE)
+
 ```
 
 ### Income
 
-Remember to edit this data to match that in the alcoholism dataset.
+Income in a country can also affect the ammount. We'll load in a data set from the United Nations' 2010 Human Development Report.
 ```{r echo = F}
 
 GNI <- read.csv("income.csv", header = F)
 
-
 income <- c(GNI$V2, GNI$V2)
 data.3 <- cbind(data.2, income)
-
 ```
 
 
---------------------------------------------------------------------------------------------
+# Linear Regression Model 
 
-#### Linear Regression Model 
-```{r echo = T}
-lm.2 <- lm(response~wine + spirits + income + factor * regions2, data = data.3)
+Now we combine everything we've looked at up until this point. We'll create a linear regression model involving what kinds of alcohol a country buys, the standardized gross national income of the country, and gender with region. We'll assume interaction between gender and region because different genders have differnt rights across countries and sections of the world. 
 
-# summary(lm.2)
-# plot(lm.2)
-
-data.4 <- data.3[c(-16, -142, -76),]
-lm.3 <- lm(response~wine + spirits + income + factor * regions2, data = data.4)
-summary(lm.3)
-plot(lm.3)
+```{r echo = F}
+#data.3 has all values without NA omitted
+data.4 <- na.omit(data.3)
+lm.2 <- lm(response~wine + spirits + income + factor + regions2 , data = data.4)
+summary(lm.2)
 ```
+Model result:
 
 
+Looking at summary of the model the only parameters that appear to have a significant impact are gender, income, and the interaction between eastern mediterranean and gender and interaction between gender and europe. Overal The model is significant with a p-value of approximately 0 and an R-squared value of 0.5907, meaning this model explains 59.07% of variaion in the prevalence rate of alcoholism.
 
-We will fit a linear regression model. 
+We need to check the assumptions. 
 
-
-
-Our fitted model:
-
-$$prevalance = 1.41721 + 0.02853*wine + 5.68066*male$$
-
-#### Plots
-
-We still have to check the conditions of the model to see if it's adequate. 
-
-```{r echo = TRUE}
+```{r echo = FALSE}
 plot(lm.2)
 ```
+Looking at the residuals vs. fitted values we see a non constant variance problem, where variance appears to increase with larger values in a funnel pattern. The Normal Q-Q plot shows signs of a heavy tailed distribution and moderate skewedness to larger values.
 
-Looking at the Normal Q-Q plot most of the data falls along the dotted line but the end of the ditribution curve at the ends, implying the data is skewed. Looking at the residuals vs. fitted graph a lot of this variation seems to be comming from the larger values, or the men. Otherwise the points look scattered normally and evenly about the line.
-
-#### Residuals
-
+We will try to fix the variance funneling by taking the log of the 
 
 
-Looking at the residuals of the linear model there over 75 potential influential points that are more extreme than the absolute value of 3. 
+```{r echo = F}
+log.response <- log(data.4$response)
 
-Let's try to remove some of the more influential points. 
+log.response[!is.finite(log.response)] <- 0
 
-```{r echo = T}
-# sort(wine.lm$residuals)
-````
+lm.3 <- lm(log.response ~wine + spirits + income + factor * regions2, data = data.4)
+summary(lm.3)
 
-We will remove the top few influential points and re-fit the model. All of these points have "male" as a factor. 
+```
+With the transformation to the log response we see some more significant variables. The p-value is close to zero indicating our model is statistically significant. We also have an increased R-squared value. The model explains 75.88% of the variation in alcohol prevalence around the world. Let's check the assumptions.
 
-```{r echo = T}
-# gender.removed <- gender[c(-76, -142, -16, -157, -58, -156, -127),]
-# 
-# influential.wine.lm <- lm(response ~ wine + factor, data = gender.removed)
-# 
-# summary(influential.wine.lm)
-# plot(influential.wine.lm)
+```{r echo = FALSE}
+plot(lm.3)
+```
+The residual's versus fitted graph looks a lot better. The points are scattered more evenly around zero and appear to have normal variation. This transformation also has a better normal distribution. The left tail of the model does appear highly skewed. We could investigate by looking at the residuals. 
 
-````
 
-After removing some influential points the percent variation in responses explained by the model increased to 46.62%. However the Normal Q-Q plot and residual vs. fitted values still show there is a lack or normality in the model. Since the normality assumption in the model is not met the model is inadequate. 
+```{r echo = FALSE}
+sort(lm.3$residuals)
+```
 
-# Conclusion
+Looking at the residual's we'll remove residual values with an absolute value greater than 2. 
+
+```{r echo = F}
+data.5 <- data.4[c(-362, -257, -265), ]
+log.response2 <- log(data.5$response)
+
+log.response2[!is.finite(log.response2)] <- 0
+
+lm.5 <- lm(log.response2 ~wine + spirits + income + factor * regions2, data = data.5)
+summary(lm.5)
+plot(lm.5)
+
+```
+
+Removing the residuals didn't the problem. We'll try removing some of the variables from the model without the removed values and see if that helps make the problem more normal.
+
+
+#Reduce Model
+The proportion of alcohol consumed does not appear to be having much affect on the model. We will reduce the model and preform a partial F-test to see if the proportion of a country's expenditure on wine and alcohol has a significant effect on the model.
+
+The null hypothesis is that wine and spirits have no effect on the regression model. The alternative is that there is some added effect on the model by at least one of those two variables.
+
+
+```{r echo = F}
+reduced.lm <- lm( log.response2 ~ income + factor + regions2 + factor * regions2, data = data.5)
+
+anova(reduced.lm, lm.5)
+
+```
+
+Looking at the output we get a -value of 0.9806 which is larger than 0.05. We do not have enough evidence to reject the null hypothesis and we conclude that the proportion of wine and spirits sold in a country have no siginificant effect on the model. 
+
+
+```{r echo = F}
+summary(reduced.lm)
+plot(reduced.lm)
+```
+
+Next, we want to see if certain regions have an effect on the model.  We'll look at an interaction plot of the data
+```{r echo = F}
+interaction.plot(data.5$factor, data.5$regions2, log.response2, col = c("red", "blue", "green", "black", "purple", "orange"))
+```
+For some reason there has to be text here
+------------------------------------------
+
+
+##Conclusion
 
 We find that gender is the biggest factor in prevalence rates, and that men are more likely to suffer from alcoholism around the world than women. We also find that there is a positive relationship between the prevalence rate of men and women within a country, and the high prevalence rates of alcoholism in women then it's likely men will also experience a high prevalence rate of alcoholism. 
 
@@ -263,9 +296,9 @@ After we seperated gender out as a factor we analyzed the affect wine had on the
 
 
 
-## try
-Health index
-income *** 
+## TO DO
+Health index -- This would be confounding becuase alcoholism is used to help define the health index
+income ***  - Done
 by region - DONE
 
 
