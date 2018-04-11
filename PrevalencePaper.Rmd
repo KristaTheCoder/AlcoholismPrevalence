@@ -3,8 +3,8 @@ title: "Factors of Alcoholism Prevalance Rates"
 author: "Krista Shuckerow"
 date: "March 24, 2018"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -193,6 +193,7 @@ GNI <- read.csv("income.csv", header = F)
 
 income <- c(GNI$V2, GNI$V2)
 data.3 <- cbind(data.2, income)
+
 ```
 
 
@@ -203,11 +204,10 @@ Now we combine everything we've looked at up until this point. We'll create a li
 ```{r echo = F}
 #data.3 has all values without NA omitted
 data.4 <- na.omit(data.3)
-lm.2 <- lm(response~wine + spirits + income + factor + regions2 , data = data.4)
+lm.2 <- lm(response~wine + spirits + income + factor + regions2 + factor * regions2, data = data.4)
 summary(lm.2)
 ```
 Model result:
-
 
 Looking at summary of the model the only parameters that appear to have a significant impact are gender, income, and the interaction between eastern mediterranean and gender and interaction between gender and europe. Overal The model is significant with a p-value of approximately 0 and an R-squared value of 0.5907, meaning this model explains 59.07% of variaion in the prevalence rate of alcoholism.
 
@@ -218,7 +218,8 @@ plot(lm.2)
 ```
 Looking at the residuals vs. fitted values we see a non constant variance problem, where variance appears to increase with larger values in a funnel pattern. The Normal Q-Q plot shows signs of a heavy tailed distribution and moderate skewedness to larger values.
 
-We will try to fix the variance funneling by taking the log of the 
+## Log-Linear Regression Model
+We will try to fix the variance funneling by taking the log of the reseponse variable.
 
 
 ```{r echo = F}
@@ -235,14 +236,16 @@ With the transformation to the log response we see some more significant variabl
 ```{r echo = FALSE}
 plot(lm.3)
 ```
-The residual's versus fitted graph looks a lot better. The points are scattered more evenly around zero and appear to have normal variation. This transformation also has a better normal distribution. The left tail of the model does appear highly skewed. We could investigate by looking at the residuals. 
+
+The residual's versus fitted graph looks a lot better. The points are scattered more evenly around zero and appear to have normal variation. This transformation also has a better normal distribution. The left tail of the model does appear highly skewed. 
 
 
 ```{r echo = FALSE}
-sort(lm.3$residuals)
+#sort(lm.3$residuals)
 ```
+## Reduce Model
 
-Looking at the residual's we'll remove residual values with an absolute value greater than 2. 
+We'll try and improve the model by testing the different regressors.
 
 ```{r echo = F}
 data.5 <- data.4[c(-362, -257, -265), ]
@@ -251,22 +254,17 @@ log.response2 <- log(data.5$response)
 log.response2[!is.finite(log.response2)] <- 0
 
 lm.5 <- lm(log.response2 ~wine + spirits + income + factor * regions2, data = data.5)
-summary(lm.5)
-plot(lm.5)
+
 
 ```
-
-Removing the residuals didn't the problem. We'll try removing some of the variables from the model without the removed values and see if that helps make the problem more normal.
-
-
-#Reduce Model
+## Proportion of alcohol
 The proportion of alcohol consumed does not appear to be having much affect on the model. We will reduce the model and preform a partial F-test to see if the proportion of a country's expenditure on wine and alcohol has a significant effect on the model.
 
 The null hypothesis is that wine and spirits have no effect on the regression model. The alternative is that there is some added effect on the model by at least one of those two variables.
 
 
 ```{r echo = F}
-reduced.lm <- lm( log.response2 ~ income + factor + regions2 + factor * regions2, data = data.5)
+reduced.lm <- lm( log.response2 ~ income +  factor * regions2, data = data.5)
 
 anova(reduced.lm, lm.5)
 
@@ -277,29 +275,72 @@ Looking at the output we get a -value of 0.9806 which is larger than 0.05. We do
 
 ```{r echo = F}
 summary(reduced.lm)
-plot(reduced.lm)
+new.lm.5 <- reduced.lm
 ```
 
-Next, we want to see if certain regions have an effect on the model.  We'll look at an interaction plot of the data
+### Similar Regions
+
+Next, we want to see if certain regions have an effect on the model.  Africa and the Western Pacific have a similar distribution of responses, so we'll try factoring them together.
+
 ```{r echo = F}
-interaction.plot(data.5$factor, data.5$regions2, log.response2, col = c("red", "blue", "green", "black", "purple", "orange"))
+#log.response2
+data.6 = data.5
+new.regions <- data.6$regions2
+#treat western pacific and africa like they have the same effect
+new.regions[new.regions == "Western Pacific"] <- "Africa"
+  
+#data.6$regions2
+lm.6 <- lm(log.response2 ~ income + factor * new.regions, data = data.6)
+summary(lm.6)
+
 ```
-For some reason there has to be text here
-------------------------------------------
+Thie model is significant with a p-value of approximately zero. We also have a 0.7615 R-squared value meaning that this model explains 76.15% of the variation in the log of alcohol prevalance. 
+
+Let's compare the new reduced model to the full model. To see if the variables removed were significant
 
 
-##Conclusion
+```{r echo = F}
+anova(lm.6, new.lm.5)
+```
+Looking at the output there is not enough evidence to conclude that the variables removed in the reduced model have an affect on the model. So we'll adopt the reduced model. 
 
-We find that gender is the biggest factor in prevalence rates, and that men are more likely to suffer from alcoholism around the world than women. We also find that there is a positive relationship between the prevalence rate of men and women within a country, and the high prevalence rates of alcoholism in women then it's likely men will also experience a high prevalence rate of alcoholism. 
+```{r echo = F}
+plot(lm.6)
 
-After we seperated gender out as a factor we analyzed the affect wine had on the model. Even thought our model identified wine as a useful regressor, the regression model it's self was inadequate because it violated the normality assumption deeming all the results useless. 
+```
+Looking at the normal Q-Q plot, we still suffer from some normality issues. With values skewed to the left. We'll try to correct this by removing more of the extreme residuals. Looking at the residual's versus fitted graph we appear to have constant variance. 
+
+```{r echo = F}
+sort(lm.6$residuals)
+```
+
+Looking at the residuals we'll remove the points where the absolute value of the residuals is greater than 2, and then re-fit the model. 
+
+```{r echo = F}
+data.7 <- cbind(log.response2, data.6, new.regions)
+data.7 <- as.data.frame(data.7)
+
+```
+
+```{r echo = F}
+data.8 <- data.7
+remove <- c(257, 362, 265, 247, 169 , 354, 303, 84, 230)
+data.9 <- data.8[!rownames(data.8) %in% remove, ]
+
+lm.7 <- lm(log.response2 ~ income + factor * new.regions, data= data.9)
+summary(lm.7)
+plot(lm.7)
+# sort(lm.7$residuals)
+```
+## Conclusion and Final Model
+
+
+$$prevalence = -0.0760 + 0.3705*income + 1.5739 * male + 0.911 * americas - 2.2694 * mediterranean + 0.70347 * europe - 0.8488 * asia + $$ 
+$$male * (-0.57138 * america + 0.10131 * mediterranean - 0.19596 * europe +0.28805 * asia )$$
+
+This model is statistically significant with a p-value or approximately zero. Without the more influential residuals we have an R-squared value of 0.8175, which means 81.75% of the variation in the log of the alcoholism prevalance is explained by this model. It is reasonable to assume constant variance and normality from this model because the residual vs. fitted graph looks like it's distributed normally and evenly around the center line. Even though Normal Q-Q plot shows sign of slight skewedness towards lower values we can assume normality because our sample size is large (n > 300).
 
 
 
-## TO DO
-Health index -- This would be confounding becuase alcoholism is used to help define the health index
-income ***  - Done
-by region - DONE
 
 
-level of education
