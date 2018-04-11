@@ -332,6 +332,7 @@ summary(lm.7)
 plot(lm.7)
 # sort(lm.7$residuals)
 ```
+
 ## Conclusion and Final Model
 
 
