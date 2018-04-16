@@ -4,8 +4,10 @@ author: "Krista Shuckerow"
 date: "April 14, 2018"
 indent: true
 output:
-  html_document: default
   pdf_document: default
+  fig_caption: false
+  html_document: default
+
 ---
 
 ```{r setup, include=FALSE}
@@ -225,22 +227,28 @@ plot(lm.3)
 ```
 
 
-Looking at the residual plots the transformed model shows constant variance aross the reponses. The normal Q-Q plot also shows a little less skewedness and there are a few influential points and outliers in the modelbut because of the large sample size of 348 values we can assume that the actual underlying distribution is normally distributed due to the Central Limit Theorem. 
+Looking at the residual plots the transformed model shows constant variance aross the reponses. The normal Q-Q plot also shows a little less skewedness and there are a few influential points and outliers in the model but because of the large sample size of 348 values we can assume that the actual underlying distribution is normally distributed due to the Central Limit Theorem. 
 
-Our final model is:
+### Final Model
 
-$log(prevalence) = -0.2857 + 0.5732 * income + 1.6735 * male + 0.9245 * Americas -2.2137 * Eastern\ Mediterranean +$
-$0.6427 * Europe -0.7630 * South\ East\ Asia - 0.6193 * male * Americas + 0.002455 * male * Eastern\ Medierraneran - $
-$0.2633 * male * europe + 0.1884 * male * South\ East\ Asia$
+$log(prevalence) = -0.2857 + 0.5732 * income + 1.6735 * male + 0.9245 * Americas -2.2137 * Eastern\ Mediterranean + 0.6427 * Europe -0.7630 * South\ East\ Asia - 0.6193 * male * Americas + 0.002455 * male * Eastern\ Medierraneran - 0.2633 * male * europe + 0.1884 * male * South\ East\ Asia$
 
 ```{r echo = F}
-log.y = data.6$log.y
-y = exp(log.y)
-log.yhat = lm.3$fitted.values
-yhat = exp(log.yhat)
-plot(y, yhat)
-x = c(0,30)
-lines(x,x)
+# log.y = data.6$log.y
+# y = exp(log.y)
+# log.yhat = lm.3$fitted.values
+# yhat = exp(log.yhat)
+# plot(y, yhat)
+# x = c(0,30)
+# lines(x,x)
 ```
+
 # Summary
 
+
+\pagebreak 
+
+\begin{center}
+\textbf{References}
+\end{center}
+\includegraphics{ref4.png}

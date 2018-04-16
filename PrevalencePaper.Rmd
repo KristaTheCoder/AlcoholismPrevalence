@@ -41,15 +41,12 @@ alcoholism$Male <- as.numeric(alcoholism$Male)
 alcoholism$Female <- as.numeric(alcoholism$Female)
 alcoholism$`Both sexes` <- as.numeric(alcoholism$`Both sexes`)
 
-head(alcoholism)
+summary(alcoholism)
 ```
 
 Looking at the first few data points we see that the data is paired by country. Let's look at the distribution of the data. 
 
 
-```{r echo=TRUE}
-summary(alcoholism)
-```
 ```{r echo = FALSE}
 boxplot.default(alcoholism[c(-1, -2)], main = "Distribution of Proportion Suffering From Alcoholism", horizontal = T)
 
@@ -92,13 +89,14 @@ Based on the results of the Wilcoxon signed rank test we get a p-value of approx
 Even though men have higher alcoholism prevalence rate, there may be a relation between the prevalence rates of men and women in the same country. 
 
 ```{r echo = F}
-plot(alcoholism$Male, alcoholism$Female, xlab = "male", ylab = "female", main = "Alcoholism Prevalence Rates")
+plot(alcoholism$Male, alcoholism$Female, xlab = "male", ylab = "female", main = "Correlation Between Alcoholism Prevalence Rates", las = 1)
 ```
-Looking at the graph there appears to be a linear relation. So we'll try to fit a linear model. 
 
-```{r echo = F}
-cor.test(alcoholism$Male, alcoholism$Female)
 
+```{r echo = T}
+corelation <- cor.test(alcoholism$Male, alcoholism$Female)
+corelation$estimate
+cat(corelation$conf.int)
 ```
 
 
@@ -333,6 +331,7 @@ plot(lm.7)
 # sort(lm.7$residuals)
 ```
 
+
 ## Conclusion and Final Model
 
 
@@ -341,7 +340,31 @@ $$male * (-0.57138 * america + 0.10131 * mediterranean - 0.19596 * europe +0.288
 
 This model is statistically significant with a p-value or approximately zero. Without the more influential residuals we have an R-squared value of 0.8175, which means 81.75% of the variation in the log of the alcoholism prevalance is explained by this model. It is reasonable to assume constant variance and normality from this model because the residual vs. fitted graph looks like it's distributed normally and evenly around the center line. Even though Normal Q-Q plot shows sign of slight skewedness towards lower values we can assume normality because our sample size is large (n > 300).
 
+```{r echo = FALSE}
+#validation **IMPORTANT**
+library(MPV)
+PRESS(lm.7)
+
+```
 
 
+--------
+10-15 slides (15 minutes)
+Discussion on Global Warming around the world, based on data
 
+When you fit the model -- what do you do with the model 
+Summary Statistics
+How different counties are differnt. 
+
+
+Paper:
+Title, introduction what you're doing and what your objective is and why it's important. 
+2. Litterature review -- how it differs from the world health organizaiton on alcoholism. report
+3. Where you go the data - world health organization
+4. Statistical methodology
+5. regression model
+6.summary
+7. references
+
+8. Add awareness
 
