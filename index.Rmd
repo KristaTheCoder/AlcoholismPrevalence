@@ -1,0 +1,246 @@
+---
+title: "Factors of Alcoholism Prevalence Rates"
+author: "Krista Shuckerow"
+date: "April 14, 2018"
+indent: true
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\pagebreak
+
+# Abstract
+
+According to the Global Information System on Alcohol and Health (GISAH) 3.3 million people die every year from the harmful use of Alcohol. The World Health Organization (WHO) tracks data on alcohol use around the world through the Global Health Organization. The object of this study was to find influential factors and the extent to which they contribute to the morbidity of alcohol abuse. This study uses alcoholism prevalence by country to to track alcohol abuse.  Alcoholism as defined by the World Health Organization as any alcohol related disorder which includes binge drinking, drinking to get drunk, and heavy excessive drinking, at least once in the past year. The alcoholism prevalence rate is calculated as the percentage of adults fifteen years and older who have suffered from alcoholism. The relevant factors found that can predict alcoholism abuse levels are Gross National Income, region, and gender. Our model was found to be statistically significant (p-value < 0.05) with an R-squared value of 0.8175 indicating this model can explain 81.75% of variation in alcoholism prevalence levels.  Knowing how these factors affect alcoholism prevalence is useful for public policy makers to make decisions on how to and what kind of programs to run to maximize the effectiveness in reducing alcoholism prevalence. 
+
+\pagebreak
+
+# Introduction
+
+The World Health Organization (WHO) monitors over 1000 health indicators for 194 member states to measure progress towards the Sustainable Development Goals (SDG). The data collected is more meant to monitor trends. Part of the “good health and well-being” SDG is to “strengthen the prevention and treatment of substance abuse, including narcotic drug abuse and harmful use of alcohol.” Most of the data recorded and presented is with the purpose of tracking individual country and global progress towards the SDG. It’s more to keep the different UN member states accountable for addressing alcohol abuse. The WHO reports on substance abuse don’t study the causes of alcoholism or alcohol problems globally, just record statistics on different indicators of alcohol abuse.
+
+The main objective of this study is to determine factors which contribute to the level of alcoholism prevalence in countries across the world. Determining the main factors in alcoholism prevalence can help with determining what kinds of alcohol abuse prevention programs to run in different parts of the world to maximize the reduction in alcoholism.  It is important to understand how factors interact, most of the WHO’s data is presented independent of other factors. One of the objectives of this study is to determine the impact of these factors and how interactions in factors could be important.
+
+\pagebreak
+
+# Statistical Methodology
+
+## Data Description
+
+Data is take from the Global Health Observatory (GHO) which is maintained by the World Health Organization and the United Nations. 
+
+Alcoholism Prevalence data is taken from the year 2010. Alcoholism Prevalence is the percentage of adults fifteen years of older who have suffered from alcoholism in the past twelve months. Alcoholism is defined as someone who has abused alcohol including heavy excessive drinking, binge drinking, drinking to get drunk or drinking as a coping mechanism for dealing with problems. An alcohol prevalence score is given for each gender in each country. 
+
+The income index comes from the Human Development Index released by the United Nations in their human development reports.  The income index is defined as GNI per capita (2005 PPP International \$, using natural logarithm) expressed as an index using a minimum value of \$100 and a maximum value \$75,000.
+
+## Desciptive Staistics
+
+```{r echo = FALSE}
+alcoholism <- read.csv("data.csv", header = F, row.names = 1)
+colnames(alcoholism) <- as.character(unlist(alcoholism[2,]))
+alcoholism <- alcoholism[c(-1,-2),]
+alcoholism$Male <- gsub("\\[.{1,}", "", alcoholism$Male)
+alcoholism$Female <- gsub("\\[.{1,}", "", alcoholism$Female)
+alcoholism$`Both sexes` <- gsub("\\[.{1,}", "",alcoholism$`Both sexes`)
+alcoholism$Male <- as.numeric(alcoholism$Male)
+alcoholism$Female <- as.numeric(alcoholism$Female)
+alcoholism$`Both sexes` <- as.numeric(alcoholism$`Both sexes`)
+
+boxplot.default(alcoholism[c(-1, -2)], main = "Distribution of Adults Suffering From Alcoholism", horizontal = T, las = 1, xlab = "Percent Alcoholism Prevalence")
+```
+
+Looking at the Distribution of Adults Suffering From Alcoholism, both of the distributions appear skewed to the right. The distribution for males is more variable than that for females. Males overal appears to have higher alcoholism prevalence rates than women. 
+
+Using the non-parametric wilcoxson signed rank test we can investigate if the distribution of males is really greater than females. The null hypothesis for the test is males and females have the same alcoholism prevalnce rates. 
+
+```{r echo = FALSE}
+difference <- alcoholism$Male - alcoholism$Female
+wilcox.test(difference, alternative = "greater", conf.int = T)
+```
+
+Based on the results of the Wilcoxon signed rank test we get a p-value of approximately zero. This is less that 0.05, therefore we reject the null hypothesis and conclude than males have a higher alcoholism prevalence rates. In addition we are 95% confident that the true difference is male and female alcoholism prevalance is 4.75 percentage points. Meaning on average males experience 4.75 percentage points higher prevalence rates than females. 
+
+
+```{r echo = F}
+plot(alcoholism$Male, alcoholism$Female, xlab = "male", ylab = "female", main = "Correlation Between Alcoholism Prevalence Rates", las = 1)
+
+corelation <- cor.test(alcoholism$Male, alcoholism$Female)
+#Correlation Coeficient
+corelation$estimate
+#Correlation Confidence Interval
+cat(corelation$conf.int)
+```
+
+We also find that there is a strong positive correlation between the alcohol prevalence of males and females in the same country. With a correlation coeffiecent of 0.8499. And we are 95% confident the true level correlation between male and female alcohol prevalence rates is between 0.8050 and 0.8852. 
+
+```{r echo = F}
+#pull in data
+alcohol <- read.csv("purealcohol.csv", header = F, row.names = 1)
+colnames(alcohol) <-  as.character(unlist(alcohol[2,]))
+alcohol <- alcohol[c(-1, -2),]
+
+# Formatting
+alcohol$Spirits <- gsub("No data", "", alcohol$Spirits)
+alcohol$Spirits <- as.numeric(alcohol$Spirits)
+alcohol$Wine <- gsub("No data", "", alcohol$Wine)
+alcohol$Wine <- as.numeric(alcohol$Wine)
+alcohol$Beer <- gsub("No data", "", alcohol$Beer)
+alcohol$Beer <- as.numeric(alcohol$Beer)
+
+countries <- read.csv("data.csv",header = FALSE)
+countries <- countries$V1
+countries <- countries[c(-1,-2)]
+
+countries2 <- c(countries, countries)
+spirits<- c(alcohol$Spirits, alcohol$Spirits)
+wine <- c(alcohol$Wine, alcohol$Wine)
+beer <- c(alcohol$Beer, alcohol$Beer)
+responses <- c(alcoholism$Male, alcoholism$Female)
+factors <- c(rep("M", length(alcoholism$Male)), rep("F", length(alcoholism$Female)))
+
+gender <- data.frame(countries2, responses, wine, spirits, factors)
+colnames(gender) <- c("country", "response", "wine", "spirits", "factor")
+gender <- gender[,-1]
+
+```
+
+## Regional
+
+Different regions may experience different levels of alcoholism for geographic or cultural reasons. We will break the world up into six different regions. The Eastern Mdeiterranean, Europe, Africa, Americas, Western Pacific, and South-East Asia. 
+
+```{r echo = F}
+r <- c('Eastern Mediterranean', 'Europe', 'Africa', 'Americas' , 'Western Pacific', 'South-East Asia' )
+
+#Start at the letter M
+regions <- c(r[1], r[2], r[3], r[2], r[3], r[4], r[4], r[2], r[5], r[2], r[2], r[4], r[1], r[6], r[4], r[2], r[2], r[4], r[3], r[6], r[4], r[2], r[3], r[4], r[5], r[2], r[3], r[3], r[3], r[3], r[5], r[3], r[4], r[3], r[3], r[4], r[5], r[4], r[3], r[3], r[5], r[4], r[2], r[4], r[2], r[2], r[6], r[3], r[2], r[1], r[4], r[4], r[4], r[1], r[4], r[3], r[3], r[2], r[3], r[5], r[2], r[2], r[3], r[3], r[2], r[2], r[3], r[2], r[4], r[4], r[3], r[3], r[4], r[4], r[4], r[2], r[2], r[6], r[6], r[1], r[1], r[2], r[2], r[2], r[4], r[5], r[1], r[2], r[3], r[5], r[1], r[2], r[5], r[2], r[1], r[3], r[3], r[1], r[2], r[2], r[3], r[3], r[5], r[6], r[3], r[2], r[5], r[3], r[3], r[4], r[5], r[2], r[5], r[2], r[1], r[3], r[6], r[3], r[5], r[6], r[2], r[5], r[4], r[3], r[3], r[5], r[2], r[1], r[1], r[5], r[4], r[5], r[4], r[4], r[5], r[2], r[2], r[1], r[5], r[2], r[2], r[2], r[3], r[4], r[4], r[4], r[5], r[2], r[3], r[1], r[3], r[2], r[3], r[3], r[5], r[2], r[2], r[5], r[1], r[3], r[2], r[6], r[1], r[4], r[3], r[2], r[2], r[1], r[2], r[6], r[2], r[6], r[3], r[5], r[4], r[1], r[2], r[2], r[5], r[3], r[2], r[1], r[2], r[3], r[4], r[4], r[2], r[5], r[4], r[5], r[1], r[3], r[3])
+
+classified <- cbind.data.frame(alcoholism, regions)
+#classified[,c(-1, -2)]
+
+regions2 <- c(regions, regions)
+data.2 <- cbind(gender, regions2)
+
+par(mar=c(4,10,2,1))
+region.boxplot <- boxplot(data.2$response~data.2$regions2, horizontal = T, las = 1, varwidth = T, xlab = "Alcoholism Prevalence Rates", col = c("blue", "red", "yellow", "green", "magenta", "orange"), main = "Prevalance Rates by Region", plot = TRUE)
+
+```
+
+Looking at the distribution of the alcoholism prevalence rates Europe appears to have the lagest ammount of variation of all the regions. All of the distributions seem to be skewed towards larger values. The Americas have the least skewed distribution. The countries in the Eastern Mediterranean have the lowest prevalence rates. This could be due to the large Muslim populations in that area as Muslims are not supposed to drink alcohol. 
+
+## Income
+
+Income in a country can also affect the ammount. We'll load in a data set from the United Nations' 2010 Human Development Report.
+```{r echo = F}
+library(car)
+GNI <- read.csv("income.csv", header = F)
+
+income <- c(GNI$V2, GNI$V2)
+data.3 <- cbind(data.2, income)
+
+plot(data.3$income, data.3$response, xlab = "Standardized Gross National Income", ylab = "Alcoholism Prevalence levels", col= data.3$factor, las = 1)
+```
+
+The scatter plot of GNI levels againsed alcoholism prevalence rates is colored so that males are represented by red points and females by black points. Based on the scater plot it is difficult to determine if income levels have an impact on alcoholism prevalence rates by themselves. 
+
+## Interaction
+```{r echo = F}
+data.4 <- na.omit(data.3)
+par(mar=c(10,4,1,1))
+interaction.plot(x.factor = data.4$regions2, trace.factor = data.4$factor, response = data.4$response, legend = T, las = 2, ylab = "Mean of Alcoholism Prevalence", xlab = NA, col = c("red", "blue"), trace.label = "Gender")
+```
+If there were no interaction between factors we would expect the lines in the interaction plot above to be parallel to each other. Since most of the lines are not parallel to eachother we will assume interaction between region and gender in the model. 
+
+
+\pagebreak
+
+# Linear Regression Model
+
+Now we combine everything we've looked at up until this point. We'll create a linear regression model involving the standardized gross national income of the country, and gender with region to predict alcoholism prevalence rates. 
+
+```{r echo = F}
+library(MPV)
+data.4$y <- data.4$response
+lm.1 <- lm(y~income + factor * regions2, data = data.4)
+summary(lm.1)
+cat(print("PRESS:"))
+PRESS(lm.1)
+```
+
+In the output for the fitted model we see a lot of the indicators are not significant even thought our overal model is significant with a p-value of approximately 0. Most of the insignificant factors are the different regions. We also have a PRESS value of 3231.282 which indicates a lot or variability in the model. Looking at the boxplot distributions of Africa and the Western Pacific look really similar. We'll try grouping them as the same factor and then perform a partial F-Test to see if there is a significant difference in the models. 
+
+```{r echo = F}
+
+new.regions <- data.4$regions2
+#treat western pacific and africa like they have the same effect
+new.regions[new.regions == "Western Pacific"] <- "Africa"
+data.5 <- data.4
+data.5$regions2 <- new.regions
+lm.2 <- lm(y ~ income + factor * regions2, data = data.5)
+summary(lm.2)
+print("PRESS:")
+PRESS(lm.2)
+
+```
+Looking at the new model sumamry we have fewer factors that are insignificant to the model. We will run the partial F-Test to see if the removed variables provided significant information to the model. We will test at the 5% significance level.
+$H_0:$ Removed variables do not significantly contribue to the model. 
+$H_A:$ At least one of the removed variables contributes to the model.
+
+```{r echo = F}
+reduced.lm <- lm.2
+full.lm <- lm.1
+anova(reduced.lm, full.lm)
+```
+
+Based on the output of the partial F test, we get a P-value of 0.9217. Therefore we fail to reject the null hypothesis at the 5% significance level and we choose the reduced model combining regions over the full model. However our PRESS value for the reduced model is only slightly smaller than that of the full model. Let's check some of the model assumptions. 
+
+```{r echo = F}
+plot(lm.2)
+```
+
+Looking at the residuals versus fitted graph for the model there does appear to be a violation of the constant variance assumption. And there is increasing variation in the model for larger fitted values. The normal Q-Q plot also shows signs of skewedness in the distribution. The Cook's Distance graph shows some of the most influential points. 
+
+We will try removing the most influential points that appear to be skewing the distribution and we'll try fitting a log-linear model for alcoholism prevalence to fix the non-constant issue.
+
+```{r echo = F}
+log.y <- log(data.5$response)
+log.y[!is.finite(log.y)] <- NA
+data.6 <- cbind(data.5, log.y)
+data.6 <- data.6[complete.cases(data.6),]
+
+lm.3 <- lm(log.y ~ income + factor * regions2, data = data.6)
+
+summary(lm.3)
+PRESS(lm.3)
+```
+
+The transformation seems to have improved the model a lot. The overal model is statistically signicant with a p-value of approximately zero. Only 3 of the factors don't appear sigificant at the 5% significance level. And we get an adjuected R-squared value of 0.7647 meaning this model explains 76.47% of the variation in alcoholism prevalence rates around the world. We also get a much lower PRESS statistic than any of the other models. The PRESS statistic in this case is 128.4894, and the lower the PRESS statistic the better.
+
+```{r echo = F}
+plot(lm.3)
+```
+
+
+Looking at the residual plots the transformed model shows constant variance aross the reponses. The normal Q-Q plot also shows a little less skewedness and there are a few influential points and outliers in the modelbut because of the large sample size of 348 values we can assume that the actual underlying distribution is normally distributed due to the Central Limit Theorem. 
+
+Our final model is:
+
+$log(prevalence) = -0.2857 + 0.5732 * income + 1.6735 * male + 0.9245 * Americas -2.2137 * Eastern\ Mediterranean +$
+$0.6427 * Europe -0.7630 * South\ East\ Asia - 0.6193 * male * Americas + 0.002455 * male * Eastern\ Medierraneran - $
+$0.2633 * male * europe + 0.1884 * male * South\ East\ Asia$
+
+```{r echo = F}
+log.y = data.6$log.y
+y = exp(log.y)
+log.yhat = lm.3$fitted.values
+yhat = exp(log.yhat)
+plot(y, yhat)
+x = c(0,30)
+lines(x,x)
+```
+# Summary
+
