@@ -4,10 +4,9 @@ author: "Krista Shuckerow"
 date: "April 14, 2018"
 indent: true
 output:
-  pdf_document: default
-  fig_caption: false
   html_document: default
-
+  fig_caption: false
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -243,8 +242,11 @@ $log(prevalence) = -0.2857 + 0.5732 * income + 1.6735 * male + 0.9245 * Americas
 # lines(x,x)
 ```
 
+\pagebreak
+
 # Summary
 
+This study found that income, gender, and region can be used to predict alcoholism prevalence. We are 95% confident that males around the world on average experience at least 4.75 percentage points higher alcoholism prevalence rates than women. The effects of gender and region also interact. This may be due to differing cultural expectations of men and women around the world. Cultural patterns for alcohol use appear regionally, and we see that the countries with high muslim populations like those in the Eastern Mediterranean have the lowest alcohol abuse while European countries have the highest levels. Income is also a factor as alcohol is considered a luxury good but there is no direct correlation between income alcoholism prevalence rates, but it was found to be significant (p-value < 0.01) in the overall model and had an impact on predicting alcoholism prevalence rates. Our final model was able to predict 76.47% of variation in the log of alcoholism prevalence rates based on income, gender, and region. Determining the factors and the extent to which they affect alcoholism prevalence rates is important because it can help policy makers design programs to target the correct demographics to maximize the reduction in alcoholism morbidity.  
 
 \pagebreak 
 
